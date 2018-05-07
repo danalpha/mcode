@@ -6,13 +6,13 @@
 	win_flex -o mcode.c --wincompat mcode.l
 	cl *.c
 	del /s /q *.obj
-	echo 回车继续空格取消
+	echo PRESS ENTER KEY GO AHEAD OR QUIT
 	call :get_key
 	if "%key%"=="" (
 		cls
 		mcode.exe
 	) else (
-		echo "取消"
+		echo "QUIT"
 		cls
 	)
 GOTO:EOF
