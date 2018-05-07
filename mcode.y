@@ -419,7 +419,16 @@ expression_v:
 	
 
 statement_x:
-	 expression_x_asign	{
+	 expression_x_local_asign 	{
+								 xsymbol* v1=xsymbol_stack__new_xsymbol(global_xsymbol_stack,$1->name,0);
+								 switch(v1->type){
+								 case xsymbol_type_0:printf("(%s)=(%s)\n",$1->name,"nil");break;
+								 case xsymbol_type_i:printf("(%s)=(%d)\n",$1->name,v1->value.value_i);break;
+								 case xsymbol_type_f:printf("(%s)=(%g)\n",$1->name,v1->value.value_f);break;
+								 case xsymbol_type_s:printf("(%s)=(%s)\n",$1->name,v1->value.value_s);break;
+								 }
+								}
+	|expression_x_asign	{
 						 xsymbol* v1=xsymbol_stack__new_xsymbol(global_xsymbol_stack,$1->name,0);
 						 switch(v1->type){
 						 case xsymbol_type_0:printf("(%s)=(%s)\n",$1->name,"nil");break;
@@ -438,23 +447,23 @@ statement_x:
 						}
 	;
 expression_x_local_asign:
-	 TV_LOCA			TV_KONG  			TV_NAME 			TV_ASGN 			expression_v	{xsymbol* v1=xsymbol_stack__new_xsymbol(global_xsymbol_stack,$1->name,1);
-																									 xsymbol_set_x(v1,$3);
-																									 $$=$1;
-																									}
-	|TV_LOCA			TV_KONG  			TV_NAME				TV_ASGN				expression_i	{xsymbol* v1=xsymbol_stack__new_xsymbol(global_xsymbol_stack,$1->name,1);
-																									 xsymbol_set_i(v1,$3);
-																									 $$=$1;
-																									}
-	|TV_LOCA			TV_KONG  			TV_NAME				TV_ASGN				expression_f	{xsymbol* v1=xsymbol_stack__new_xsymbol(global_xsymbol_stack,$1->name,1);
-																									 xsymbol_set_f(v1,$3);
-																									 $$=$1;
-																									}
-	|TV_LOCA			TV_KONG  			TV_NAME 			TV_ASGN				TV_NAME			{xsymbol* v1=xsymbol_stack__new_xsymbol(global_xsymbol_stack,$1->name,1);
-																									 xsymbol* v3=xsymbol_stack__new_xsymbol(global_xsymbol_stack,$3->name,1);
-																									 xsymbol_set_x(v1,v3);
-																									 $$=$1; 
-																									}
+	 TV_LOCA			TV_NAME 			TV_ASGN 			expression_v	{xsymbol* v2=xsymbol_stack__new_xsymbol(global_xsymbol_stack,$2->name,1);
+																				 xsymbol_set_x(v2,$4);
+																				 $$=$2;
+																				}
+	|TV_LOCA			TV_NAME				TV_ASGN				expression_i	{xsymbol* v2=xsymbol_stack__new_xsymbol(global_xsymbol_stack,$2->name,1);
+																				 xsymbol_set_i(v2,$4);
+																				 $$=$2;
+																				}
+	|TV_LOCA			TV_NAME				TV_ASGN				expression_f	{xsymbol* v2=xsymbol_stack__new_xsymbol(global_xsymbol_stack,$2->name,1);
+																				 xsymbol_set_f(v2,$4);
+																				 $$=$2;
+																				}
+	|TV_LOCA			TV_NAME 			TV_ASGN				TV_NAME			{xsymbol* v2=xsymbol_stack__new_xsymbol(global_xsymbol_stack,$2->name,1);
+																				 xsymbol* v4=xsymbol_stack__new_xsymbol(global_xsymbol_stack,$4->name,1);
+																				 xsymbol_set_x(v2,v4);
+																				 $$=$2; 
+																				}
 	;
 
 expression_x_asign:

@@ -151,7 +151,7 @@ void mcode_lex_do(enum mcode_keyword keyword);
 	
 (\;)									{MCODE_LEX_DO(V_SEMI);}
 (\,)									{MCODE_LEX_DO(V_COMA);}
-([\t ])+								{MCODE_LEX_DO(V_KONG);}
+([\t ])+								{/*MCODE_LEX_DO(V_KONG);*/}
 (\()									{MCODE_LEX_DO(V_XKBB);}
 (\))									{MCODE_LEX_DO(V_XKEE);}
 (\[)									{MCODE_LEX_DO(V_ZKBB);}
