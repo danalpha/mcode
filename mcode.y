@@ -71,7 +71,9 @@ extern xname_stack*   global_xname_stack;
 %left TV_ADDI TV_DECI 
 %left TV_MULT TV_DIVI
 %left TV_XKBB TV_XKEE
-%type <value_i> expression_i statement_i
+%left TV_EQUL
+%left TV_NOTT
+%type <value_i> expression_i statement_i expression_b statement_b
 %type <value_f> expression_f statement_f
 %type <value_v> expression_v statement_v
 %type <value_x> expression_x statement_x expression_x_asign expression_x_local_asign
@@ -86,22 +88,100 @@ statement_list:
 	|statement_f		TV_LINE
 	|statement_v		TV_LINE
 	|statement_x		TV_LINE
+	|statement_b		TV_LINE
 	
 	|statement_list		statement_i TV_SEMI
 	|statement_list		statement_f TV_SEMI
 	|statement_list		statement_v TV_SEMI
 	|statement_list		statement_x TV_SEMI
+	|statement_list		statement_b TV_SEMI
 
 	|statement_list		statement_i TV_LINE
 	|statement_list		statement_f TV_LINE
 	|statement_list		statement_v TV_LINE
 	|statement_list		statement_x TV_LINE
+	|statement_list		statement_b TV_LINE
 	
 	|statement_list     TV_LINE
 	|statement_list     TV_SEMI
 
 	|TV_SEMI
 	|TV_LINE
+	;
+statement_b:
+	expression_b		{printf("=%s\n",$1==0?"false":"true");}
+	;
+expression_b:
+	 TV_TRUE			{$$=1;}
+	|TV_FALS			{$$=0;}
+	|TV_XKBB 			expression_b		TV_XKEE			{$$=$2;}
+	|expression_b		TV_EQUL				expression_b	{$$=((($1!=0)==($3!=0))?1:0);}
+	|expression_i		TV_EQUL				expression_b	{$$=((($1!=0)==($3!=0))?1:0);}
+	|expression_b		TV_EQUL				expression_i	{$$=((($1!=0)==($3!=0))?1:0);}
+	|expression_f		TV_EQUL				expression_b	{$$=((($1!=0)==($3!=0))?1:0);}
+	|expression_b		TV_EQUL				expression_f	{$$=((($1!=0)==($3!=0))?1:0);}	
+	
+	|expression_i		TV_EQUL				expression_i	{$$=($1==$3?1:0);}
+	|expression_f		TV_EQUL				expression_f	{$$=($1==$3?1:0);}
+	|expression_i		TV_EQUL				expression_f	{$$=($1==$3?1:0);}
+	|expression_f		TV_EQUL				expression_i	{$$=($1==$3?1:0);}
+	
+	|expression_b		TV_EQUL				expression_v	{$$=xsymbol_v_equal_b($3,$1);}
+	|expression_i		TV_EQUL				expression_v	{$$=xsymbol_v_equal_i($3,$1);}
+	|expression_f		TV_EQUL				expression_v	{$$=xsymbol_v_equal_f($3,$1);}
+	|expression_v		TV_EQUL				expression_b	{$$=xsymbol_v_equal_b($1,$3);}
+	|expression_v		TV_EQUL				expression_i	{$$=xsymbol_v_equal_i($1,$3);}
+	|expression_v		TV_EQUL				expression_f	{$$=xsymbol_v_equal_f($1,$3);}
+	|expression_v		TV_EQUL				expression_v	{$$=xsymbol_v_equal_v($1,$3);}	
+	|expression_v		TV_EQUL				expression_x	{xsymbol* v3=xsymbol_stack__new_xsymbol(global_xsymbol_stack,$3->name,0);
+															 $$=xsymbol_v_equal_v($1,v3);
+															}
+	|expression_x		TV_EQUL				expression_v	{xsymbol* v1=xsymbol_stack__new_xsymbol(global_xsymbol_stack,$1->name,0);
+															 $$=xsymbol_v_equal_v(v1,$3);
+															}
+	|expression_x		TV_EQUL				expression_x	{xsymbol* v1=xsymbol_stack__new_xsymbol(global_xsymbol_stack,$1->name,0);
+															 xsymbol* v3=xsymbol_stack__new_xsymbol(global_xsymbol_stack,$3->name,0);
+															 $$=xsymbol_v_equal_v(v1,v3);
+															}
+	
+	|expression_b		TV_EQUL				expression_x	{xsymbol* v3=xsymbol_stack__new_xsymbol(global_xsymbol_stack,$3->name,0);
+															 $$=xsymbol_v_equal_b(v3,$1);
+															}
+	|expression_i		TV_EQUL				expression_x	{xsymbol* v3=xsymbol_stack__new_xsymbol(global_xsymbol_stack,$3->name,0);
+															 $$=xsymbol_v_equal_i(v3,$1);
+															}
+	|expression_f		TV_EQUL				expression_x	{xsymbol* v3=xsymbol_stack__new_xsymbol(global_xsymbol_stack,$3->name,0);
+															 $$=xsymbol_v_equal_f(v3,$1);
+															}
+	|expression_x		TV_EQUL				expression_b	{xsymbol* v1=xsymbol_stack__new_xsymbol(global_xsymbol_stack,$1->name,0);
+															 $$=xsymbol_v_equal_b(v1,$3);
+															}
+	|expression_x		TV_EQUL				expression_i	{xsymbol* v1=xsymbol_stack__new_xsymbol(global_xsymbol_stack,$1->name,0);
+															 $$=xsymbol_v_equal_i(v1,$3);
+															}
+	|expression_x		TV_EQUL				expression_f	{xsymbol* v1=xsymbol_stack__new_xsymbol(global_xsymbol_stack,$1->name,0);
+															 $$=xsymbol_v_equal_f(v1,$3);
+															}
+	|expression_b		TV_EQUL				TV_NILL			{$$=0;}
+	|expression_i		TV_EQUL				TV_NILL			{$$=0;}
+	|expression_f		TV_EQUL				TV_NILL			{$$=0;}
+	|expression_v		TV_EQUL				TV_NILL			{$$=xsymbol_is_nil($1);}
+	|expression_x		TV_EQUL				TV_NILL			{xsymbol* v1=xsymbol_stack__new_xsymbol(global_xsymbol_stack,$1->name,0);
+															 $$=xsymbol_is_nil(v1);
+															}
+	|TV_NILL			TV_EQUL				expression_i	{$$=0;}
+	|TV_NILL			TV_EQUL				expression_f	{$$=0;}
+	|TV_NILL			TV_EQUL				expression_v	{$$=xsymbol_is_nil($3);}
+	|TV_NILL			TV_EQUL				expression_x	{xsymbol* v3=xsymbol_stack__new_xsymbol(global_xsymbol_stack,$3->name,0);
+															 $$=xsymbol_is_nil(v3);
+															}
+	|TV_NOTT			expression_b		{$$=($2!=0?0:1);}
+	|TV_NOTT			expression_i		{$$=($2!=0?0:1);}
+	|TV_NOTT			expression_f		{$$=($2!=0?0:1);}
+	|TV_NOTT			expression_v		{if(xsymbol_is_nil($2)==1){$$=1;}else{$$=xsymbol_v_equal_b($2,0);}}
+	|TV_NOTT			expression_x		{xsymbol* v2=xsymbol_stack__new_xsymbol(global_xsymbol_stack,$2->name,0);
+											 if(xsymbol_is_nil(v2)==1){$$=1;}else{$$=xsymbol_v_equal_b(v2,0);}
+											}
 	;
 statement_i:
 	expression_i		{printf("=%d\n",$1);}
@@ -414,6 +494,7 @@ expression_v:
 											 xsymbol_i_deci_v(v0,0,$2);
 											 $$=v0;
 											}
+	
 	|TV_XKBB 			expression_v		TV_XKEE			{$$=$2;}
 	;
 	
@@ -423,6 +504,7 @@ statement_x:
 								 xsymbol* v1=xsymbol_stack__new_xsymbol(global_xsymbol_stack,$1->name,0);
 								 switch(v1->type){
 								 case xsymbol_type_0:printf("(%s)=(%s)\n",$1->name,"nil");break;
+								 case xsymbol_type_b:printf("(%s)=(%s)\n",$1->name,(v1->value.value_b!=0)?"true":"false");break;
 								 case xsymbol_type_i:printf("(%s)=(%d)\n",$1->name,v1->value.value_i);break;
 								 case xsymbol_type_f:printf("(%s)=(%g)\n",$1->name,v1->value.value_f);break;
 								 case xsymbol_type_s:printf("(%s)=(%s)\n",$1->name,v1->value.value_s);break;
@@ -432,6 +514,7 @@ statement_x:
 						 xsymbol* v1=xsymbol_stack__new_xsymbol(global_xsymbol_stack,$1->name,0);
 						 switch(v1->type){
 						 case xsymbol_type_0:printf("(%s)=(%s)\n",$1->name,"nil");break;
+						 case xsymbol_type_b:printf("(%s)=(%s)\n",$1->name,(v1->value.value_b!=0)?"true":"false");break;
 						 case xsymbol_type_i:printf("(%s)=(%d)\n",$1->name,v1->value.value_i);break;
 						 case xsymbol_type_f:printf("(%s)=(%g)\n",$1->name,v1->value.value_f);break;
 						 case xsymbol_type_s:printf("(%s)=(%s)\n",$1->name,v1->value.value_s);break;
@@ -440,6 +523,7 @@ statement_x:
 	|expression_x		{xsymbol* v1=xsymbol_stack__new_xsymbol(global_xsymbol_stack,$1->name,0);
 						 switch(v1->type){
 						 case xsymbol_type_0:printf("(%s)=(%s)\n",$1->name,"nil");break;
+						 case xsymbol_type_b:printf("(%s)=(%s)\n",$1->name,(v1->value.value_b!=0)?"true":"false");break;
 						 case xsymbol_type_i:printf("(%s)=(%d)\n",$1->name,v1->value.value_i);break;
 						 case xsymbol_type_f:printf("(%s)=(%g)\n",$1->name,v1->value.value_f);break;
 						 case xsymbol_type_s:printf("(%s)=(%s)\n",$1->name,v1->value.value_s);break;
@@ -449,6 +533,10 @@ statement_x:
 expression_x_local_asign:
 	 TV_LOCA			TV_NAME 			TV_ASGN 			expression_v	{xsymbol* v2=xsymbol_stack__new_xsymbol(global_xsymbol_stack,$2->name,1);
 																				 xsymbol_set_x(v2,$4);
+																				 $$=$2;
+																				}
+	|TV_LOCA			TV_NAME				TV_ASGN				expression_b	{xsymbol* v2=xsymbol_stack__new_xsymbol(global_xsymbol_stack,$2->name,1);
+																				 xsymbol_set_b(v2,$4);
 																				 $$=$2;
 																				}
 	|TV_LOCA			TV_NAME				TV_ASGN				expression_i	{xsymbol* v2=xsymbol_stack__new_xsymbol(global_xsymbol_stack,$2->name,1);
@@ -469,6 +557,10 @@ expression_x_local_asign:
 expression_x_asign:
 	 TV_NAME			TV_ASGN				expression_v	{xsymbol* v1=xsymbol_stack__new_xsymbol(global_xsymbol_stack,$1->name,0);
 															 xsymbol_set_x(v1,$3);
+															 $$=$1;
+															}
+	|TV_NAME			TV_ASGN				expression_b	{xsymbol* v1=xsymbol_stack__new_xsymbol(global_xsymbol_stack,$1->name,0);
+															 xsymbol_set_b(v1,$3);
 															 $$=$1;
 															}
 	|TV_NAME			TV_ASGN				expression_i	{xsymbol* v1=xsymbol_stack__new_xsymbol(global_xsymbol_stack,$1->name,0);

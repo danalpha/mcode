@@ -114,6 +114,11 @@ void xsymbol_set_0(xsymbol* sym)
 	sym->type=xsymbol_type_0;
 	sym->value.value_s=NULL;
 }
+void xsymbol_set_b(xsymbol* sym,int b)
+{
+	sym->type=xsymbol_type_b;
+	sym->value.value_b=b;
+}
 void xsymbol_set_i(xsymbol* sym,int i)
 {
 	sym->type=xsymbol_type_i;
@@ -382,7 +387,127 @@ void xsymbol_v_divi_v(xsymbol* sym,xsymbol* v1,xsymbol* v2)
 		//print(语法错误,不能相加)
 	}
 }
+int xsymbol_v_equal_i(xsymbol* v1,int i)
+{
+	if(v1->type==xsymbol_type_i)
+	{
+		return (i==v1->value.value_i?1:0);
+	}
+	else if(v1->type==xsymbol_type_f)
+	{
+		return (i==v1->value.value_f?1:0);
+	}
+	else if(v1->type==xsymbol_type_b)
+	{
+		return (((v1->value.value_i!=0)==(i!=0))?1:0);
+	}
+	else
+	{
+		//print(语法错误,不能比较)
+		return 0;
+	}
+}
+int xsymbol_v_equal_f(xsymbol* v1,double f)
+{
+	if(v1->type==xsymbol_type_i)
+	{
+		return (f==v1->value.value_i?1:0);
+	}
+	else if(v1->type==xsymbol_type_f)
+	{
+		return (f==v1->value.value_f?1:0);
+	}
+	else if(v1->type==xsymbol_type_b)
+	{
+		return (((v1->value.value_b!=0)==(f!=0))?1:0);
+	}
+	else
+	{
+		//print(语法错误,不能比较)
+		return 0;
+	}
+}
+int xsymbol_v_equal_b(xsymbol* v1,int b)
+{
+	if(v1->type==xsymbol_type_i)
+	{
+		return (((v1->value.value_i!=0)==(b!=0))?1:0);
+	}
+	else if(v1->type==xsymbol_type_f)
+	{
+		return (((v1->value.value_f!=0)==(b!=0))?1:0);
+	}
+	else if(v1->type==xsymbol_type_b)
+	{
+		return (((v1->value.value_b!=0)==(b!=0))?1:0);
+	}
+	else
+	{
+		//print(语法错误,不能比较)
+		return 0;
+	}
+}
+int xsymbol_v_equal_v(xsymbol* v1,xsymbol* v2)
+{
+	if(v1->type==xsymbol_type_i&&v2->type==xsymbol_type_i)
+	{
+		return ((v1->value.value_i==v2->value.value_i)?1:0);
+	}
+	else if(v1->type==xsymbol_type_f&&v2->type==xsymbol_type_f)
+	{
+		return ((v1->value.value_f==v2->value.value_f)?1:0);
+	}
+	else if(v1->type==xsymbol_type_i&&v2->type==xsymbol_type_f)
+	{
+		return ((v1->value.value_i==v2->value.value_f)?1:0);
+	}
+	else if(v1->type==xsymbol_type_f&&v2->type==xsymbol_type_i)
+	{
+		return ((v1->value.value_f==v2->value.value_i)?1:0);
+	}
+	else if(v1->type==xsymbol_type_b&&v2->type==xsymbol_type_b)
+	{
+		return (((v1->value.value_b!=0)==(v2->value.value_b!=0))?1:0);
+	}
+	else if(v1->type==xsymbol_type_b&&v2->type==xsymbol_type_i)
+	{
+		return (((v1->value.value_b!=0)==(v2->value.value_i!=0))?1:0);
+	}
+	else if(v1->type==xsymbol_type_b&&v2->type==xsymbol_type_f)
+	{
+		return (((v1->value.value_b!=0)==(v2->value.value_f!=0))?1:0);
+	}
+	else if(v2->type==xsymbol_type_b&&v1->type==xsymbol_type_b)
+	{
+		return (((v1->value.value_b!=0)==(v2->value.value_b!=0))?1:0);
+	}
+	else if(v2->type==xsymbol_type_b&&v1->type==xsymbol_type_i)
+	{
+		return (((v1->value.value_b!=0)==(v2->value.value_i!=0))?1:0);
+	}
+	else if(v2->type==xsymbol_type_b&&v1->type==xsymbol_type_f)
+	{
+		return (((v1->value.value_b!=0)==(v2->value.value_f!=0))?1:0);
+	}
+	else if(v1->type==xsymbol_type_0&&v2->type==xsymbol_type_0)
+	{
+		return 1;
+	}
+	else if(v1->type==xsymbol_type_0||v2->type==xsymbol_type_0)
+	{
+		return 0;
+	}
+	else
+	{
+		//print(语法错误,不能比较)
+		return 0;
+	}
+}
 
+int xsymbol_is_nil(xsymbol* v)
+{
+	return (v->type==xsymbol_type_0?1:0);
+}
 
 void xsymbol_stack__del(xsymbol_stack* stack)
 {
